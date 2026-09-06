@@ -57,7 +57,15 @@ export const hasLaunchedPidMatch = (
   const matchedProcess = pidToProcess.get(launchedPid);
   if (!matchedProcess) return false;
 
-  return processReferencesExecutable(matchedProcess, executablePath);
+  if (processReferencesExecutable(matchedProcess, executablePath)) return true;
+
+  const cwd = (matchedProcess.cwd ?? "").toLowerCase();
+  const gameDirectory = path.dirname(executablePath).toLowerCase();
+  const relative = path.relative(gameDirectory, cwd);
+
+  return (
+    relative !== "" && !relative.startsWith("..") && !path.isAbsolute(relative)
+  );
 };
 
 const processMatchesWinePrefix = (

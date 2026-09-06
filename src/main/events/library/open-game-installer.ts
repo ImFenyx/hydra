@@ -8,6 +8,10 @@ import { registerEvent } from "../register-event";
 import { downloadsSublevel, gamesSublevel, levelKeys } from "@main/level";
 import { GameShop } from "@types";
 import { logger, Umu, Wine } from "@main/services";
+import {
+  isLinuxNativeExecutable,
+  isLinuxShellScript,
+} from "@main/helpers/linux-native-executable";
 
 const launchInstallerWithWine = async (filePath: string): Promise<boolean> => {
   return await new Promise<boolean>((resolve) => {
@@ -31,11 +35,17 @@ const launchInstallerWithWine = async (filePath: string): Promise<boolean> => {
 
 const launchInstallerDirectly = async (filePath: string): Promise<boolean> => {
   return await new Promise<boolean>((resolve) => {
-    const child = spawn(filePath, [], {
-      detached: true,
-      stdio: "ignore",
-      shell: false,
-    });
+    const useBash =
+      process.platform === "linux" && isLinuxShellScript(filePath);
+    const child = spawn(
+      useBash ? "/bin/bash" : filePath,
+      useBash ? [filePath] : [],
+      {
+        detached: true,
+        stdio: "ignore",
+        shell: false,
+      }
+    );
 
     child.once("spawn", () => {
       child.unref();
@@ -72,6 +82,15 @@ const executeGameInstaller = async (
   }
 
   if (process.platform === "linux") {
+    if (isLinuxNativeExecutable(filePath)) {
+      const launchedDirectly = await launchInstallerDirectly(filePath);
+      if (launchedDirectly) {
+        return true;
+      }
+
+      return await openPathAndCheck(filePath);
+    }
+
     try {
       await Umu.launchExecutable(filePath, [], {
         gameId: options?.gameId,
@@ -151,6 +170,23 @@ const openGameInstaller = async (
         protonPath: game?.protonPath,
       }
     );
+  }
+
+  if (process.platform === "linux") {
+    const setupShPath = path.join(gamePath, "setup.sh");
+    if (fs.existsSync(setupShPath)) {
+      return await executeGameInstaller(setupShPath, { gameId: objectId });
+    }
+
+    const shellFiles = gamePathFileNames.filter(
+      (fileName: string) => path.extname(fileName).toLowerCase() === ".sh"
+    );
+
+    if (shellFiles.length === 1) {
+      return await executeGameInstaller(path.join(gamePath, shellFiles[0]), {
+        gameId: objectId,
+      });
+    }
   }
 
   shell.openPath(gamePath);

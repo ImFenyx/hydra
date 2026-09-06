@@ -51,6 +51,20 @@ const getGameInstallerActionType = async (
     return "install";
   }
 
+  if (process.platform === "linux") {
+    if (fs.existsSync(path.join(gamePath, "setup.sh"))) {
+      return "install";
+    }
+
+    const shellFiles = gamePathFileNames.filter(
+      (fileName: string) => path.extname(fileName).toLowerCase() === ".sh"
+    );
+
+    if (shellFiles.length === 1) {
+      return "install";
+    }
+  }
+
   // Otherwise, opens folder
   return "open-folder";
 };
