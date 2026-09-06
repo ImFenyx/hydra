@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const ELF_MAGIC = Buffer.from([0x7f, 0x45, 0x4c, 0x46]);
+export const ELF_MAGIC = Buffer.from([0x7f, 0x45, 0x4c, 0x46]);
 
 export const isLinuxShellScript = (executablePath: string) =>
   path.extname(executablePath).toLowerCase() === ".sh";

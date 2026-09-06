@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import {
+  ELF_MAGIC,
   isElfBinary,
   isLinuxNativeExecutable,
   isLinuxShellScript,
@@ -17,14 +18,11 @@ before(() => {
   fs.writeFileSync(path.join(tmpDir, "GAME.SH"), "#!/bin/bash\necho hi\n");
   fs.writeFileSync(
     path.join(tmpDir, "game-noext"),
-    Buffer.concat([
-      Buffer.from([0x7f, 0x45, 0x4c, 0x46]),
-      Buffer.from("fake-elf-body"),
-    ])
+    Buffer.concat([ELF_MAGIC, Buffer.from("fake-elf-body")])
   );
   fs.writeFileSync(
     path.join(tmpDir, "game.elf"),
-    Buffer.from([0x7f, 0x45, 0x4c, 0x46, 0x02, 0x01])
+    Buffer.concat([ELF_MAGIC, Buffer.from([0x02, 0x01])])
   );
   fs.writeFileSync(path.join(tmpDir, "game.exe"), "MZ-fake-windows-binary");
   fs.writeFileSync(

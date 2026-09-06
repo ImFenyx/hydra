@@ -35,6 +35,12 @@ const getGameInstallerActionType = async (
     return "open-folder";
   }
 
+  if (process.platform === "linux") {
+    if (fs.existsSync(path.join(gamePath, "setup.sh"))) {
+      return "install";
+    }
+  }
+
   // Check for setup.exe
   const setupPath = path.join(gamePath, "setup.exe");
   if (fs.existsSync(setupPath)) {
@@ -47,15 +53,7 @@ const getGameInstallerActionType = async (
     (fileName: string) => path.extname(fileName).toLowerCase() === ".exe"
   );
 
-  if (gamePathExecutableFiles.length === 1) {
-    return "install";
-  }
-
   if (process.platform === "linux") {
-    if (fs.existsSync(path.join(gamePath, "setup.sh"))) {
-      return "install";
-    }
-
     const shellFiles = gamePathFileNames.filter(
       (fileName: string) => path.extname(fileName).toLowerCase() === ".sh"
     );
@@ -63,6 +61,10 @@ const getGameInstallerActionType = async (
     if (shellFiles.length === 1) {
       return "install";
     }
+  }
+
+  if (gamePathExecutableFiles.length === 1) {
+    return "install";
   }
 
   // Otherwise, opens folder

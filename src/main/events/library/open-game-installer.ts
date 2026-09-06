@@ -44,6 +44,7 @@ const launchInstallerDirectly = async (filePath: string): Promise<boolean> => {
         detached: true,
         stdio: "ignore",
         shell: false,
+        cwd: path.dirname(filePath),
       }
     );
 
@@ -147,6 +148,13 @@ const openGameInstaller = async (
     return true;
   }
 
+  if (process.platform === "linux") {
+    const setupShPath = path.join(gamePath, "setup.sh");
+    if (fs.existsSync(setupShPath)) {
+      return await executeGameInstaller(setupShPath, { gameId: objectId });
+    }
+  }
+
   const setupPath = path.join(gamePath, "setup.exe");
   if (fs.existsSync(setupPath)) {
     return await executeGameInstaller(setupPath, {
@@ -161,23 +169,7 @@ const openGameInstaller = async (
     (fileName: string) => path.extname(fileName).toLowerCase() === ".exe"
   );
 
-  if (gamePathExecutableFiles.length === 1) {
-    return await executeGameInstaller(
-      path.join(gamePath, gamePathExecutableFiles[0]),
-      {
-        gameId: objectId,
-        winePrefixPath: effectiveWinePrefixPath,
-        protonPath: game?.protonPath,
-      }
-    );
-  }
-
   if (process.platform === "linux") {
-    const setupShPath = path.join(gamePath, "setup.sh");
-    if (fs.existsSync(setupShPath)) {
-      return await executeGameInstaller(setupShPath, { gameId: objectId });
-    }
-
     const shellFiles = gamePathFileNames.filter(
       (fileName: string) => path.extname(fileName).toLowerCase() === ".sh"
     );
@@ -187,6 +179,17 @@ const openGameInstaller = async (
         gameId: objectId,
       });
     }
+  }
+
+  if (gamePathExecutableFiles.length === 1) {
+    return await executeGameInstaller(
+      path.join(gamePath, gamePathExecutableFiles[0]),
+      {
+        gameId: objectId,
+        winePrefixPath: effectiveWinePrefixPath,
+        protonPath: game?.protonPath,
+      }
+    );
   }
 
   shell.openPath(gamePath);
