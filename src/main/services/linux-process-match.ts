@@ -39,11 +39,22 @@ export const processReferencesExecutable = (
 ) => {
   const target = executablePath.toLowerCase();
   const gameDirectory = path.dirname(executablePath).toLowerCase();
+  const cwd = (matchedProcess.cwd ?? "").toLowerCase();
 
   return (
-    (matchedProcess.cwd ?? "").toLowerCase() === gameDirectory ||
+    isInGameDirectory(cwd, gameDirectory) ||
     (matchedProcess.exe ?? "").toLowerCase() === target ||
     (matchedProcess.appImagePath ?? "").toLowerCase() === target
+  );
+};
+
+const isInGameDirectory = (cwd: string, gameDirectory: string) => {
+  if (cwd === gameDirectory) return true;
+
+  const relative = path.relative(gameDirectory, cwd);
+
+  return (
+    relative !== "" && !relative.startsWith("..") && !path.isAbsolute(relative)
   );
 };
 
@@ -57,15 +68,7 @@ export const hasLaunchedPidMatch = (
   const matchedProcess = pidToProcess.get(launchedPid);
   if (!matchedProcess) return false;
 
-  if (processReferencesExecutable(matchedProcess, executablePath)) return true;
-
-  const cwd = (matchedProcess.cwd ?? "").toLowerCase();
-  const gameDirectory = path.dirname(executablePath).toLowerCase();
-  const relative = path.relative(gameDirectory, cwd);
-
-  return (
-    relative !== "" && !relative.startsWith("..") && !path.isAbsolute(relative)
-  );
+  return processReferencesExecutable(matchedProcess, executablePath);
 };
 
 const processMatchesWinePrefix = (

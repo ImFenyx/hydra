@@ -148,10 +148,16 @@ const openGameInstaller = async (
     return true;
   }
 
+  const gamePathFileNames = fs.readdirSync(gamePath);
+
   if (process.platform === "linux") {
-    const setupShPath = path.join(gamePath, "setup.sh");
-    if (fs.existsSync(setupShPath)) {
-      return await executeGameInstaller(setupShPath, { gameId: objectId });
+    const setupShFileName = gamePathFileNames.find(
+      (fileName: string) => fileName.toLowerCase() === "setup.sh"
+    );
+    if (setupShFileName) {
+      return await executeGameInstaller(path.join(gamePath, setupShFileName), {
+        gameId: objectId,
+      });
     }
   }
 
@@ -164,7 +170,6 @@ const openGameInstaller = async (
     });
   }
 
-  const gamePathFileNames = fs.readdirSync(gamePath);
   const gamePathExecutableFiles = gamePathFileNames.filter(
     (fileName: string) => path.extname(fileName).toLowerCase() === ".exe"
   );

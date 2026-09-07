@@ -46,6 +46,18 @@ describe("Linux game window process matching", () => {
     );
   });
 
+  it("accepts a process sitting in a game subdirectory", () => {
+    assert.equal(
+      isLinuxGameWindowProcess(
+        [{ pid: 20, exe: "/bin/bash", cwd: "/games/game/subdir" }],
+        20,
+        undefined,
+        ["/games/game/start.sh"]
+      ),
+      true
+    );
+  });
+
   it("accepts a Wine process from the configured compatibility prefix", () => {
     assert.equal(
       isLinuxGameWindowProcess(
