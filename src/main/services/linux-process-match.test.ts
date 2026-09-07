@@ -46,7 +46,7 @@ describe("Linux game window process matching", () => {
     );
   });
 
-  it("accepts a process sitting in a game subdirectory", () => {
+  it("rejects a window merely sitting in a game subdirectory", () => {
     assert.equal(
       isLinuxGameWindowProcess(
         [{ pid: 20, exe: "/bin/bash", cwd: "/games/game/subdir" }],
@@ -54,7 +54,7 @@ describe("Linux game window process matching", () => {
         undefined,
         ["/games/game/start.sh"]
       ),
-      true
+      false
     );
   });
 
