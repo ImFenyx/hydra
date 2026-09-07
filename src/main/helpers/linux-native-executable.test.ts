@@ -63,8 +63,11 @@ describe("isElfBinary", () => {
 });
 
 describe("isLinuxNativeExecutable", () => {
-  it("treats .sh and ELF binaries as native on linux", () => {
-    if (process.platform !== "linux") return;
+  it("treats .sh and ELF binaries as native on linux", (t) => {
+    if (process.platform !== "linux") {
+      t.skip();
+      return;
+    }
     assert.strictEqual(
       isLinuxNativeExecutable(path.join(tmpDir, "game.sh")),
       true
@@ -79,8 +82,11 @@ describe("isLinuxNativeExecutable", () => {
     );
   });
 
-  it("never routes .exe or plain text through the native path", () => {
-    if (process.platform !== "linux") return;
+  it("never routes .exe or plain text through the native path", (t) => {
+    if (process.platform !== "linux") {
+      t.skip();
+      return;
+    }
     assert.strictEqual(
       isLinuxNativeExecutable(path.join(tmpDir, "game.exe")),
       false
