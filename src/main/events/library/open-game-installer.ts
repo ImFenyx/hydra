@@ -38,7 +38,7 @@ const launchInstallerDirectly = async (filePath: string): Promise<boolean> => {
     const useBash =
       process.platform === "linux" && isLinuxShellScript(filePath);
     const child = spawn(
-      useBash ? "/bin/bash" : filePath,
+      useBash ? "bash" : filePath,
       useBash ? [filePath] : [],
       {
         detached: true,

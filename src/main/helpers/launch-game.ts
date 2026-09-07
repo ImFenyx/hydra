@@ -76,7 +76,7 @@ const launchNatively = (
   const useBash =
     process.platform === "linux" && isLinuxShellScript(executablePath);
   const resolvedLaunchCommand = resolveLaunchCommand({
-    baseCommand: useBash ? "/bin/bash" : executablePath,
+    baseCommand: useBash ? "bash" : executablePath,
     baseArgs: useBash ? [executablePath] : [],
     launchOptions,
     wrapperCommands: [
